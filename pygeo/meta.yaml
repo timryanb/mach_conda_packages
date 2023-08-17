@@ -30,6 +30,7 @@ requirements:
     - scipy
     - baseclasses
     - pyspline
+    - packaging
     - mpi4py
 
 test:
