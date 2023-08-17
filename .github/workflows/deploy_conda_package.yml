@@ -1,0 +1,87 @@
+name: Deploy conda package
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  # Remove push when finally merging.
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab.
+  workflow_dispatch:
+
+jobs:
+  # This job is called deploy_conda_package.
+  deploy_conda_package:
+    # Recommended if you intend to make multiple deployments in quick succession.
+    concurrency: ci-${{ github.ref }}
+    # Run on Ubuntu/MacOS
+    runs-on: ${{ matrix.OS }}
+    env:
+      ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+    # Ensures conda environment is initialized for all steps
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # linux versions
+          - OS: ubuntu-latest
+            BUILD_DIR: linux-64
+
+          # macos versions
+          - OS: macos-latest
+            BUILD_DIR: osx-64
+
+    name: OpenVSP Conda Package Deployment (${{ matrix.OS }})
+
+    steps:
+
+      - name: Display run details
+        run: |
+          echo "=============================================================";
+          echo "Run #${GITHUB_RUN_NUMBER}";
+          echo "Run ID: ${GITHUB_RUN_ID}";
+          lscpu;
+          echo "Testing: ${GITHUB_REPOSITORY}";
+          echo "Triggered by: ${GITHUB_EVENT_NAME}";
+          echo "Initiated by: ${GITHUB_ACTOR}";
+          echo "=============================================================";
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it.
+      - uses: actions/checkout@v2
+      - name: Setup miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: 3.8
+
+
+      - name: Install conda-build
+        run: |
+          conda install anaconda-client conda-build conda-verify -q -y;
+          conda install -c conda-forge boa -q -y;
+          conda config --set anaconda_upload no;
+
+      - name: Build baseclasses package
+        if: ${{ matrix.OS }} == "ubuntu-latest"
+        run: |
+          cd ${GITHUB_WORKSPACE}/baseclasses;
+          conda build --no-include-recipe -c conda-forge --output-folder . .;
+          anaconda upload ${{ matrix.BUILD_DIR }}/*.tar.bz2 --force;
+
+      - name: Build pyspline package
+        run: |
+          cd ${GITHUB_WORKSPACE}/pyspline;
+          conda build --no-include-recipe -c conda-forge --output-folder . .;
+          anaconda upload ${{ matrix.BUILD_DIR }}/*.tar.bz2 --force;
+
+      - name: Build pygeo package
+        if: ${{ matrix.OS }} == "ubuntu-latest"
+        run: |
+          cd ${GITHUB_WORKSPACE}/pygeo;
+          conda build --no-include-recipe -c timryanb -c conda-forge --output-folder . .;
+          anaconda upload ${{ matrix.BUILD_DIR }}/*.tar.bz2 --force;

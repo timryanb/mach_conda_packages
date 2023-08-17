@@ -1,0 +1,41 @@
+{% set name = "baseclasses" %}
+
+{% set version = environ.get('GIT_DESCRIBE_TAG', '') %}
+{% if version.startswith('v') %}
+{% set version = version[1:] %}
+{% endif %}
+
+{% set build = 0 %}
+
+package:
+  name: "{{ name }}"
+  version: "{{ version }}"
+
+source:
+  git_url: https://github.com/mdolab/baseclasses.git
+
+build:
+  number: 0
+  script: "{{ PYTHON }} -m pip install . -vv"
+  noarch: python
+
+requirements:
+  build:
+    - python
+    - numpy
+    - setuptools
+
+  run:
+    - python
+    - numpy
+
+test:
+
+  imports:
+    - baseclasses
+
+about:
+  home: https://github.com/mdolab/baseclasses
+  license: Apache
+  license_family: APACHE
+  summary: "baseclasses contains, well, base classes that are used together with the rest of MDO Lab tools."
