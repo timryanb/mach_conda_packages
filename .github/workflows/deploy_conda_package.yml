@@ -37,7 +37,7 @@ jobs:
           - OS: macos-latest
             BUILD_DIR: osx-64
 
-    name: OpenVSP Conda Package Deployment (${{ matrix.OS }})
+    name: MACH Conda Package Deployment (${{ matrix.OS }})
 
     steps:
 
