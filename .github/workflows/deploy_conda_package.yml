@@ -67,7 +67,7 @@ jobs:
           conda config --set anaconda_upload no;
 
       - name: Build baseclasses package
-        if: ${{ matrix.OS }} == "ubuntu-latest"
+        if: runner.os == 'Linux'
         run: |
           cd ${GITHUB_WORKSPACE}/baseclasses;
           conda build --no-include-recipe -c conda-forge --output-folder . .;
@@ -80,7 +80,7 @@ jobs:
           anaconda upload ${{ matrix.BUILD_DIR }}/*.tar.bz2 --force;
 
       - name: Build pygeo package
-        if: ${{ matrix.OS }} == "ubuntu-latest"
+        if: runner.os == 'Linux'
         run: |
           cd ${GITHUB_WORKSPACE}/pygeo;
           conda build --no-include-recipe -c timryanb -c conda-forge --output-folder . .;
