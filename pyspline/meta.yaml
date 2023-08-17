@@ -25,7 +25,7 @@ requirements:
     - numpy   1.22   # [py==310]
     - numpy   1.23   # [py==311]
     - {{ compiler('c') }}
-    - {{ compiler('fortran') }}
+    - gfortran
     - make
     - setuptools
 
